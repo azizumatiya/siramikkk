@@ -218,4 +218,9 @@ def get_stats():
 
 if __name__ == '__main__':
     init_invoice_counter()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Render assigns port dynamically
+    app.run(host="0.0.0.0", port=port, debug=True)
+else:
+    init_invoice_counter()  # This will run even with Gunicorn
+
+
