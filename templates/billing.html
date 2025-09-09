@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRAMIK WELDING WORKERS - Billing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #2e59d9;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .invoice-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            transition: transform 0.3s ease;
+        }
+        .invoice-container:hover {
+            transform: translateY(-3px);
+        }
+        .invoice-header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .company-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+        .invoice-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .invoice-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .invoice-table td {
+            vertical-align: middle;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+        .btn-warning {
+            background: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+        .btn-danger {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        .form-control, .form-select {
+            border-radius: 6px;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        .payment-history {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+        }
+        .payment-row {
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.4rem 0;
+            transition: background 0.2s ease;
+        }
+        .payment-row:hover {
+            background: #e9ecef;
+        }
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+        }
+        .modal-header {
+            background: var(--primary-color);
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .print-invoice {
+            display: none;
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        @media (max-width: 767.98px) {
+            body { font-size: 14px; }
+            .invoice-container { padding: 1rem; margin: 1rem 0.5rem; }
+            .company-logo { font-size: 1.2rem; }
+            .invoice-title { font-size: 1.4rem; }
+            .invoice-table th, .invoice-table td { font-size: 0.75rem; padding: 0.4rem; }
+            .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { display: none; }
+            .btn { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+            .form-control, .form-select { font-size: 0.8rem; padding: 0.4rem; }
+            .modal-dialog { margin: 0.5rem; }
+            .modal-body { padding: 1rem; }
+            .modal-footer { flex-wrap: wrap; gap: 0.5rem; }
+            .payment-history { max-height: 120px; font-size: 0.75rem; }
+            .d-flex.gap-2 { flex-direction: column; gap: 0.5rem; }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+        @media print {
+            body * { visibility: hidden; }
+            .print-invoice, .print-invoice * { visibility: visible !important; }
+            .print-invoice { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+            .print-invoice table { border-collapse: collapse; }
+            .print-invoice th, .print-invoice td { border: 1px solid #000; padding: 6px; font-size: 12px; }
+            .print-invoice th { background: #eee; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="text-center text-primary">
+                        <i class="fas fa-tools me-2"></i>SIRAMIK WELDING WORKERS
+                    </h1>
+                    <div>
+                        <a href="{{ url_for('billing') }}" class="btn btn-primary me-2">Billing</a>
+                        <a href="{{ url_for('saved_invoices') }}" class="btn btn-primary me-2">Saved Invoices</a>
+                        <a href="{{ url_for('monthly_report') }}" class="btn btn-primary me-2">Monthly Report</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    Monthly Invoices: {{ stats.monthly_count }} | Total Paid: ₹{{ "%.2f" % stats.total_paid }} | Total Balance: ₹{{ "%.2f" % stats.total_balance }}
+                </div>
+
+                <!-- Invoice Form -->
+                <div class="invoice-container">
+                    <div class="invoice-header">
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-6">
+                                <div class="company-logo">SIRAMIK WELDING WORKERS</div>
+                                <p class="mb-1 small">Opposite Banas Complex, Near Rajasthan Marbal</p>
+                                <p class="mb-1 small">Navavas, Danta, Pin-Code: 385120, B.K</p>
+                                <p class="mb-1 small">Phone: 9428354635</p>
+                                <p class="mb-0 small">Email: yourname@gmail.com | www.siramikwelder.com</p>
+                            </div>
+                            <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+                                <div class="invoice-title">INVOICE</div>
+                                <p class="mb-1 small">Invoice #: <span id="invoiceNumber">G2FEE001</span></p>
+                                <p class="mb-0 small">Date: <span id="invoiceDate"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="invoiceForm" novalidate>
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="customerName" class="form-label">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerName" required>
+                                <div class="invalid-feedback">Please enter a name.</div>
+
+                                <label for="customerAddress" class="form-label mt-2">Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="customerAddress" rows="2" required></textarea>
+                                <div class="invalid-feedback">Please enter an address.</div>
+
+                                <label for="customerCity" class="form-label mt-2">City <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerCity" required>
+                                <div class="invalid-feedback">Please enter a city.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="nameNumber" class="form-label">Mobile Number</label>
+                                <input type="text" class="form-control" id="nameNumber">
+
+                                <label class="form-label mt-2">Date</label>
+                                <div class="d-flex gap-2">
+                                    <select id="nameMonth" class="form-select"></select>
+                                    <input type="number" id="nameDay" class="form-control" placeholder="Day" min="1" max="31">
+                                    <input type="number" id="nameYear" class="form-control" placeholder="Year" min="1900" max="2100">
+                                </div>
+
+                                <label for="npn" class="form-label mt-2">NPN</label>
+                                <input type="text" class="form-control" id="npn">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table invoice-table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Rate (₹)</th>
+                                        <th>Amount (₹)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceItems">
+                                    <tr>
+                                        <td><input type="text" class="form-control form-control-sm" placeholder="Item description"></td>
+                                        <td><input type="number" class="form-control form-control-sm rate" min="0" placeholder="0.00"></td>
+                                        <td><input type="number" class="form-control form-control-sm amount" readonly></td>
+                                        <td><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2" class="text-end fw-bold">Total</td>
+                                        <td><span id="invoiceTotal">₹0.00</span></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-end fw-bold">Paid</td>
+                                        <td><span id="amountPaid">₹0.00</span></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-end fw-bold">Balance</td>
+                                        <td><span id="balance">₹0.00</span></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <button type="button" id="addItem" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Add Item
+                            </button>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Record Payment</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <label for="paymentAmount" class="form-label">Amount</label>
+                                        <input type="number" id="paymentAmount" min="0" class="form-control">
+                                        <div class="invalid-feedback">Please enter a valid amount.</div>
+
+                                        <label for="paymentDate" class="form-label mt-2">Date <span class="text-danger">*</span></label>
+                                        <input type="date" id="paymentDate" class="form-control" required>
+                                        <div class="invalid-feedback">Please select a date.</div>
+
+                                        <label for="paymentMethod" class="form-label mt-2">Method</label>
+                                        <select id="paymentMethod" class="form-select">
+                                            <option value="Cash">Cash</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="Credit Card">Credit Card</option>
+                                            <option value="Check">Check</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <button type="button" id="recordPayment" class="btn btn-success mt-2">
+                                            <i class="fas fa-money-bill-wave me-1"></i>Record Payment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Payment History</h5>
+                                    </div>
+                                    <div id="paymentHistory" class="card-body payment-history">
+                                        <p class="text-center text-muted">No payments recorded</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="amountInWords" class="form-label">Amount in words</label>
+                                <textarea id="amountInWords" class="form-control" rows="2" readonly></textarea>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="numberValue" class="form-label">Number value</label>
+                                <input id="numberValue" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-between gap-2">
+                            <button type="button" id="saveDraft" class="btn btn-secondary">
+                                <i class="fas fa-save me-1"></i>Save Draft
+                            </button>
+                            <button type="button" id="downloadInvoice" class="btn btn-success">
+                                <i class="fas fa-download me-1"></i>Download Invoice
+                            </button>
+                            <button type="submit" id="saveInvoice" class="btn btn-primary">
+                                <i class="fas fa-check-circle me-1"></i>Save Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Printable Invoice -->
+                <div id="printArea" class="print-invoice">
+                    <div style="font-family: Arial, sans-serif; color: black; width: 100%; max-width: 800px; margin: auto; padding: 10px;">
+                        <h2 style="color: #4e73df; text-align: center;">SIRAMIK WELDING WORKERS</h2>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Opposite Banas Complex, Near Rajasthan Marbal</p>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Navavas, Danta, Pin-Code: 385120, B.K</p>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Phone: 9428354635</p>
+                        <p style="text-align: center; margin-bottom: 20px; font-size: 12px;">Email: yourname@gmail.com | www.siramikwelder.com</p>
+
+                        <h3 style="text-align: center; margin: 15px 0; font-size: 16px;">INVOICE</h3>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 12px;">
+                            <div><strong>Invoice #:</strong> <span id="printInvoiceNumber"></span></div>
+                            <div><strong>Date:</strong> <span id="printInvoiceDate"></span></div>
+                        </div>
+
+                        <div style="margin-bottom: 15px; font-size: 12px;">
+                            <p><strong>Name:</strong> <span id="printCustomerName"></span></p>
+                            <p><strong>Address:</strong> <span id="printCustomerAddress"></span></p>
+                            <p><strong>City:</strong> <span id="printCustomerCity"></span></p>
+                            <p><strong>Mobile Number:</strong> <span id="printNameNumber"></span></p>
+                            <p><strong>Date:</strong> <span id="printNameDate"></span></p>
+                            <p><strong>NPN:</strong> <span id="printNpn"></span></p>
+                        </div>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
+                            <thead style="background: #eee;">
+                                <tr>
+                                    <th style="border: 1px solid black; padding: 6px;">Description</th>
+                                    <th style="border: 1px solid black; padding: 6px;">Rate (₹)</th>
+                                    <th style="border: 1px solid black; padding: 6px;">Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printInvoiceItems"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">Total</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span id="printInvoiceTotal"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">Paid</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span id="printAmountPaid"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">Balance</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span id="printBalance"></span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="margin-bottom: 8px; font-size: 14px;">Payment History</h5>
+                            <div id="printPaymentHistory" style="font-size: 12px;"></div>
+                        </div>
+
+                        <p style="margin-top: 10px; font-size: 12px;"><strong>Amount in words:</strong> <span id="printAmountInWords"></span></p>
+                        <p style="font-size: 12px;"><strong>Number value:</strong> <span id="printNumberValue"></span></p>
+
+                        <p style="text-align: center; margin-top: 20px; font-style: italic; font-size: 12px;">Thank you for your business!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPayments = [];
+
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatInvoiceDate(d) {
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function numberToWords(num) {
+            const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            if (num === 0) return 'Zero Rupees';
+
+            function numToWords(n) {
+                if (n < 20) return a[n];
+                if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');
+                if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred ' + (n % 100 ? numToWords(n % 100) : '');
+                if (n < 100000) return numToWords(Math.floor(n / 1000)) + ' Thousand ' + (n % 1000 ? numToWords(n % 1000) : '');
+                if (n < 10000000) return numToWords(Math.floor(n / 100000)) + ' Lakh ' + (n % 100000 ? numToWords(n % 100000) : '');
+                return numToWords(Math.floor(n / 10000000)) + ' Crore ' + (n % 10000000 ? numToWords(n % 10000000) : '');
+            }
+
+            const n = Math.floor(num);
+            const decimalPart = Math.round((num - n) * 100);
+            let words = numToWords(n) + ' Rupees';
+            if (decimalPart > 0) {
+                words += ' and ' + numToWords(decimalPart) + ' Paise';
+            }
+            return words.trim();
+        }
+
+        function populateMonths(selectId) {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const select = document.getElementById(selectId);
+            months.forEach((m, i) => select.add(new Option(m, i)));
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const today = new Date();
+            document.getElementById('invoiceDate').textContent = formatInvoiceDate(today);
+            document.getElementById('nameMonth').value = today.getMonth();
+            document.getElementById('nameDay').value = today.getDate();
+            document.getElementById('nameYear').value = today.getFullYear();
+            document.getElementById('paymentDate').valueAsDate = today;
+
+            populateMonths('nameMonth');
+
+            try {
+                const response = await fetch('/api/invoice-number');
+                const data = await response.json();
+                document.getElementById('invoiceNumber').textContent = data.number;
+            } catch (error) {
+                console.error('Error fetching invoice number:', error);
+            }
+
+            document.getElementById('addItem').addEventListener('click', addInvoiceItem);
+            document.getElementById('saveInvoice').addEventListener('click', (e) => {
+                e.preventDefault();
+                saveInvoice();
+            });
+            document.getElementById('saveDraft').addEventListener('click', saveDraft);
+            document.getElementById('downloadInvoice').addEventListener('click', downloadCurrentInvoice);
+            document.getElementById('recordPayment').addEventListener('click', recordPayment);
+
+            ['nameMonth', 'nameDay', 'nameYear'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updateInvoiceDate);
+            });
+
+            addRateListeners();
+            document.querySelector('.remove-item').addEventListener('click', (e) => {
+                e.target.closest('tr').remove();
+                calculateTotals();
+            });
+        });
+
+        function updateInvoiceDate() {
+            const y = parseInt(document.getElementById('nameYear').value);
+            const m = parseInt(document.getElementById('nameMonth').value);
+            const d = parseInt(document.getElementById('nameDay').value);
+            if (d && m >= 0 && y) {
+                const dt = new Date(y, m, d);
+                if (!isNaN(dt)) document.getElementById('invoiceDate').textContent = formatInvoiceDate(dt);
+            }
+        }
+
+        function addInvoiceItem() {
+            const tbody = document.getElementById('invoiceItems');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm" placeholder="Item description"></td>
+                <td><input type="number" class="form-control form-control-sm rate" min="0" placeholder="0.00"></td>
+                <td><input type="number" class="form-control form-control-sm amount" readonly></td>
+                <td><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            tr.querySelector('.rate').addEventListener('input', calculateTotals);
+            tr.querySelector('.remove-item').addEventListener('click', () => {
+                tr.remove();
+                calculateTotals();
+            });
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let total = 0;
+            document.querySelectorAll('#invoiceItems tr').forEach(tr => {
+                const rateInput = tr.querySelector('.rate');
+                const amountInput = tr.querySelector('.amount');
+                const rate = parseFloat(rateInput.value) || 0;
+                amountInput.value = rate.toFixed(2);
+                total += rate;
+            });
+            const paid = currentPayments.reduce((sum, p) => sum + p.amount, 0);
+            const balance = total - paid;
+            document.getElementById('invoiceTotal').textContent = '₹' + total.toFixed(2);
+            document.getElementById('amountPaid').textContent = '₹' + paid.toFixed(2);
+            document.getElementById('balance').textContent = '₹' + balance.toFixed(2);
+            document.getElementById('numberValue').value = total.toFixed(2);
+            document.getElementById('amountInWords').value = numberToWords(total);
+        }
+
+        function recordPayment() {
+            const amountInput = document.getElementById('paymentAmount');
+            const dateInput = document.getElementById('paymentDate');
+            const methodInput = document.getElementById('paymentMethod');
+
+            if (!dateInput.value) {
+                dateInput.classList.add('is-invalid');
+                return;
+            }
+
+            const amount = parseFloat(amountInput.value) || 0;
+            if (amount < 0) {
+                amountInput.classList.add('is-invalid');
+                return;
+            }
+
+            const total = parseFloat(document.getElementById('invoiceTotal').textContent.replace(/[^\d.-]/g, '')) || 0;
+            const paid = currentPayments.reduce((sum, p) => sum + p.amount, 0);
+            if (amount > 0 && amount + paid > total) {
+                alert('Payment cannot exceed total invoice amount');
+                return;
+            }
+
+            if (amount > 0) {
+                currentPayments.push({
+                    date: dateInput.value,
+                    amount: amount,
+                    method: methodInput.value
+                });
+            }
+
+            renderPaymentHistory('paymentHistory', currentPayments);
+            calculateTotals();
+
+            amountInput.value = '';
+            dateInput.valueAsDate = new Date();
+            amountInput.classList.remove('is-invalid');
+            dateInput.classList.remove('is-invalid');
+        }
+
+        function renderPaymentHistory(elementId, payments) {
+            const history = document.getElementById(elementId);
+            history.innerHTML = '';
+            if (payments.length === 0) {
+                history.innerHTML = '<p class="text-center text-muted">No payments recorded</p>';
+                return;
+            }
+            payments.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'payment-row d-flex justify-content-between';
+                div.innerHTML = `
+                    <span>${formatDate(p.date)}</span>
+                    <span>₹${p.amount.toFixed(2)} (${p.method})</span>
+                `;
+                history.appendChild(div);
+            });
+        }
+
+        async function saveInvoice() {
+            const form = document.getElementById('invoiceForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const invoice = collectInvoiceData();
+            try {
+                const response = await fetch('/api/invoices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(invoice)
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Invoice saved successfully!');
+                    clearForm();
+                    updateInvoiceNumber();
+                } else {
+                    alert('Error saving invoice: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error saving invoice: ' + error.message);
+            }
+        }
+
+        function saveDraft() {
+            alert('Draft saved successfully!');
+        }
+
+        function collectInvoiceData() {
+            const items = [];
+            document.querySelectorAll('#invoiceItems tr').forEach(tr => {
+                const desc = tr.querySelector('input[type=text]').value.trim();
+                const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+                if (desc || rate > 0) items.push({ description: desc, rate: rate, amount: rate });
+            });
+
+            const paid = currentPayments.reduce((sum, p) => sum + p.amount, 0);
+            const y = parseInt(document.getElementById('nameYear').value);
+            const m = parseInt(document.getElementById('nameMonth').value);
+            const d = parseInt(document.getElementById('nameDay').value);
+            const nameDate = d && m >= 0 && y ? formatInvoiceDate(new Date(y, m, d)) : '';
+
+            return {
+                number: document.getElementById('invoiceNumber').textContent,
+                date: document.getElementById('invoiceDate').textContent,
+                name: document.getElementById('customerName').value,
+                address: document.getElementById('customerAddress').value,
+                city: document.getElementById('customerCity').value,
+                nameNumber: document.getElementById('nameNumber').value,
+                nameDate: nameDate,
+                npn: document.getElementById('npn').value,
+                items: items,
+                total: items.reduce((sum, item) => sum + item.amount, 0),
+                amountPaid: paid,
+                payments: currentPayments,
+                amountInWords: document.getElementById('amountInWords').value,
+                numberValue: document.getElementById('numberValue').value
+            };
+        }
+
+        async function downloadCurrentInvoice() {
+            const invoice = collectInvoiceData();
+            generatePrintableInvoice(null, invoice);
+        }
+
+        async function generatePrintableInvoice(id, invoiceData = null) {
+            let invoice = invoiceData;
+            if (id) {
+                const response = await fetch(`/api/invoices/${id}`);
+                invoice = await response.json();
+                if (!response.ok) {
+                    alert('Invoice not found');
+                    return;
+                }
+            }
+
+            const paid = invoice.amountPaid || 0;
+            const balance = invoice.total - paid;
+
+            document.getElementById('printInvoiceNumber').textContent = invoice.number;
+            document.getElementById('printInvoiceDate').textContent = invoice.date;
+            document.getElementById('printCustomerName').textContent = invoice.name;
+            document.getElementById('printCustomerAddress').textContent = invoice.address;
+            document.getElementById('printCustomerCity').textContent = invoice.city;
+            document.getElementById('printNameNumber').textContent = invoice.nameNumber;
+            document.getElementById('printNameDate').textContent = invoice.nameDate;
+            document.getElementById('printNpn').textContent = invoice.npn || '';
+
+            const tbody = document.getElementById('printInvoiceItems');
+            tbody.innerHTML = '';
+            invoice.items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border: 1px solid black; padding: 6px;">${item.description}</td>
+                    <td style="border: 1px solid black; padding: 6px; text-align: right;">₹${item.rate.toFixed(2)}</td>
+                    <td style="border: 1px solid black; padding: 6px; text-align: right;">₹${item.amount.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('printInvoiceTotal').textContent = '₹' + invoice.total.toFixed(2);
+            document.getElementById('printAmountPaid').textContent = '₹' + paid.toFixed(2);
+            document.getElementById('printBalance').textContent = '₹' + balance.toFixed(2);
+            document.getElementById('printAmountInWords').textContent = invoice.amountInWords || '';
+            document.getElementById('printNumberValue').textContent = invoice.numberValue || '';
+
+            const ph = document.getElementById('printPaymentHistory');
+            ph.innerHTML = '';
+            if (invoice.payments && invoice.payments.length) {
+                invoice.payments.forEach(p => {
+                    const d = document.createElement('div');
+                    d.style.borderBottom = '1px solid black';
+                    d.style.padding = '5px 0';
+                    d.textContent = `${formatDate(p.date)} - ₹${p.amount.toFixed(2)} (${p.method})`;
+                    ph.appendChild(d);
+                });
+            } else {
+                ph.innerHTML = '<p>No payments recorded</p>';
+            }
+
+            const printArea = document.getElementById('printArea');
+            printArea.style.display = 'block';
+            setTimeout(() => {
+                window.print();
+                printArea.style.display = 'none';
+            }, 500);
+        }
+
+        function clearForm() {
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerAddress').value = '';
+            document.getElementById('customerCity').value = '';
+            document.getElementById('nameNumber').value = '';
+            document.getElementById('npn').value = '';
+            document.getElementById('invoiceDate').textContent = formatInvoiceDate(new Date());
+            document.getElementById('nameMonth').value = new Date().getMonth();
+            document.getElementById('nameDay').value = new Date().getDate();
+            document.getElementById('nameYear').value = new Date().getFullYear();
+            document.getElementById('invoiceItems').innerHTML = `
+                <tr>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="Item description"></td>
+                    <td><input type="number" class="form-control form-control-sm rate" min="0" placeholder="0.00"></td>
+                    <td><input type="number" class="form-control form-control-sm amount" readonly></td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            currentPayments = [];
+            renderPaymentHistory('paymentHistory', currentPayments);
+            document.getElementById('amountPaid').textContent = '₹0.00';
+            document.getElementById('balance').textContent = '₹0.00';
+            document.getElementById('numberValue').value = '';
+            document.getElementById('amountInWords').value = '';
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentDate').valueAsDate = new Date();
+            addRateListeners();
+            document.querySelector('.remove-item').addEventListener('click', (e) => {
+                e.target.closest('tr').remove();
+                calculateTotals();
+            });
+        }
+
+        async function updateInvoiceNumber() {
+            try {
+                const response = await fetch('/api/invoice-number');
+                const data = await response.json();
+                document.getElementById('invoiceNumber').textContent = data.number;
+            } catch (error) {
+                console.error('Error updating invoice number:', error);
+            }
+        }
+
+        function addRateListeners() {
+            document.querySelectorAll('.rate').forEach(input => {
+                input.addEventListener('input', calculateTotals);
+            });
+        }
+    </script>
+</body>
+</html>

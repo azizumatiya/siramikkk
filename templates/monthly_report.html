@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRAMIK WELDING WORKERS - Monthly Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #2e59d9;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding: 1rem;
+        }
+
+        .report-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            margin: 1rem 0;
+            transition: transform 0.3s ease;
+        }
+
+        .report-container:hover {
+            transform: translateY(-3px);
+        }
+
+        .company-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .filter-section {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .invoice-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .invoice-table td {
+            vertical-align: middle;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-success,
+        .btn-info {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 6px;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .modal-header {
+            background: var(--primary-color);
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .modal-body {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .payment-history {
+            max-height: 120px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .payment-row {
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.4rem 0;
+            transition: background 0.2s ease;
+        }
+
+        .payment-row:hover {
+            background: #e9ecef;
+        }
+
+        .print-invoice {
+            display: none;
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .navbar-mobile {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        /* Card-based layout for mobile */
+        .invoice-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            display: none;
+        }
+
+        .invoice-card .card-header {
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .invoice-card .card-body {
+            font-size: 0.8rem;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 767.98px) {
+            body {
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 0.5rem;
+            }
+
+            .report-container {
+                padding: 0.75rem;
+                margin: 0.5rem;
+            }
+
+            .company-logo {
+                font-size: 1rem;
+            }
+
+            .report-title {
+                font-size: 1.2rem;
+            }
+
+            .filter-section {
+                padding: 0.5rem;
+            }
+
+            .form-control,
+            .form-select {
+                font-size: 0.8rem;
+                padding: 0.4rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                min-width: 80px;
+            }
+
+            .navbar-mobile .btn {
+                flex: 1 1 45%;
+            }
+
+            .invoice-table {
+                display: none;
+            }
+
+            .invoice-card {
+                display: block;
+            }
+
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: 95vw;
+            }
+
+            .modal-body {
+                padding: 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .modal-footer {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .payment-history {
+                max-height: 100px;
+                font-size: 0.75rem;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .filter-section .row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .print-invoice,
+            .print-invoice * {
+                visibility: visible !important;
+            }
+
+            .print-invoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+            }
+
+            .print-invoice table {
+                border-collapse: collapse;
+            }
+
+            .print-invoice th,
+            .print-invoice td {
+                border: 1px solid #000;
+                padding: 6px;
+                font-size: 12px;
+            }
+
+            .print-invoice th {
+                background: #eee;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="text-center text-primary">
+                        <i class="fas fa-tools me-2"></i>SIRAMIK WELDING WORKERS
+                    </h1>
+                    <div>
+                        <a href="{{ url_for('billing') }}" class="btn btn-primary me-2">Billing</a>
+                        <a href="{{ url_for('saved_invoices') }}" class="btn btn-primary me-2">Saved Invoices</a>
+                        <a href="{{ url_for('monthly_report') }}" class="btn btn-primary me-2">Monthly Report</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger"><i
+                                class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    Monthly Invoices: {{ stats.monthly_count }} | Total Paid: ₹{{ "%.2f" % stats.total_paid }} | Total
+                    Balance: ₹{{ "%.2f" % stats.total_balance }}
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <h3 class="mb-3"><i class="fas fa-filter me-2"></i>Filter by Month and Year</h3>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-4">
+                            <label for="monthSelect" class="form-label">Month</label>
+                            <select id="monthSelect" class="form-select">
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="yearSelect" class="form-label">Year</label>
+                            <select id="yearSelect" class="form-select"></select>
+                        </div>
+                        <div class="col-12 col-md-4 d-flex align-items-end">
+                            <button class="btn btn-light w-100" id="filterBtn">
+                                <i class="fas fa-search me-2"></i>Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Report -->
+                <div class="report-container mt-4">
+                    <h3 class="mb-3 report-title"><i class="fas fa-chart-bar me-2"></i>Monthly Report</h3>
+                    <div class="alert alert-success mb-3">
+                        Selected Period Total Paid: ₹<span id="periodTotalPaid">0.00</span> | Total Balance: ₹<span
+                            id="periodTotalBalance">0.00</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered invoice-table">
+                            <thead>
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>Date</th>
+                                    <th>Total (₹)</th>
+                                    <th>Paid (₹)</th>
+                                    <th>Balance (₹)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceList">
+                                <tr>
+                                    <td colspan="8" class="text-center">Loading invoices...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- View Modal -->
+                <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Invoice Details</h5>
+                                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="invoice-header mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-12 col-md-6">
+                                            <div class="company-logo">SIRAMIK WELDING WORKERS</div>
+                                            <p class="mb-1 small">Opposite Banas Complex, Near Rajasthan Marbal</p>
+                                            <p class="mb-1 small">Navavas, Danta, Pin-Code: 385120, B.K</p>
+                                            <p class="mb-1 small">Phone: 9428354635</p>
+                                            <p class="mb-0 small">Email: yourname@gmail.com | www.siramikwelder.com</p>
+                                        </div>
+                                        <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+                                            <div class="invoice-title">INVOICE</div>
+                                            <p class="mb-1 small">Invoice #: <span id="viewInvoiceNumber"></span></p>
+                                            <p class="mb-0 small">Date: <span id="viewInvoiceDate"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <dl class="row mb-3">
+                                    <dt class="col-4 col-md-3">Name</dt>
+                                    <dd class="col-8 col-md-9" id="viewCustomerName"></dd>
+                                    <dt class="col-4 col-md-3">Address</dt>
+                                    <dd class="col-8 col-md-9" id="viewCustomerAddress"></dd>
+                                    <dt class="col-4 col-md-3">City</dt>
+                                    <dd class="col-8 col-md-9" id="viewCustomerCity"></dd>
+                                    <dt class="col-4 col-md-3">Mobile Number</dt>
+                                    <dd class="col-8 col-md-9" id="viewNameNumber"></dd>
+                                    <dt class="col-4 col-md-3">Date</dt>
+                                    <dd class="col-8 col-md-9" id="viewNameDate"></dd>
+                                    <dt class="col-4 col-md-3">NPN</dt>
+                                    <dd class="col-8 col-md-9" id="viewNpn"></dd>
+                                </dl>
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered invoice-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Rate (₹)</th>
+                                                <th>Amount (₹)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="viewInvoiceItems"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="2" class="text-end">Total</th>
+                                                <th id="viewInvoiceTotal"></th>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="2" class="text-end">Paid</th>
+                                                <th id="viewAmountPaid"></th>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="2" class="text-end">Balance</th>
+                                                <th id="viewBalance"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Payment History</h5>
+                                    </div>
+                                    <div id="paymentHistoryView" class="card-body payment-history">
+                                        <p class="text-center text-muted">No payments recorded</p>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12 col-md-6">
+                                        <p class="small"><strong>Amount in words:</strong> <span
+                                                id="viewAmountInWords"></span></p>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <p class="small"><strong>Number value:</strong> <span
+                                                id="viewNumberValue"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button id="downloadInvoiceBtn" class="btn btn-success">
+                                    <i class="fas fa-download me-1"></i>Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Printable Invoice -->
+                <div id="printArea" class="print-invoice">
+                    <div
+                        style="font-family: Arial, sans-serif; color: black; width: 100%; max-width: 800px; margin: auto; padding: 10px;">
+                        <h2 style="color: #4e73df; text-align: center;">SIRAMIK WELDING WORKERS</h2>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Opposite Banas Complex, Near
+                            Rajasthan Marbal</p>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Navavas, Danta, Pin-Code: 385120, B.K
+                        </p>
+                        <p style="text-align: center; margin: 0; font-size: 12px;">Phone: 9428354635</p>
+                        <p style="text-align: center; margin-bottom: 20px; font-size: 12px;">Email: yourname@gmail.com |
+                            www.siramikwelder.com</p>
+
+                        <h3 style="text-align: center; margin: 15px 0; font-size: 16px;">INVOICE</h3>
+
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 12px;">
+                            <div><strong>Invoice #:</strong> <span id="printInvoiceNumber"></span></div>
+                            <div><strong>Date:</strong> <span id="printInvoiceDate"></span></div>
+                        </div>
+
+                        <div style="margin-bottom: 15px; font-size: 12px;">
+                            <p><strong>Name:</strong> <span id="printCustomerName"></span></p>
+                            <p><strong>Address:</strong> <span id="printCustomerAddress"></span></p>
+                            <p><strong>City:</strong> <span id="printCustomerCity"></span></p>
+                            <p><strong>Mobile Number:</strong> <span id="printNameNumber"></span></p>
+                            <p><strong>Date:</strong> <span id="printNameDate"></span></p>
+                            <p><strong>NPN:</strong> <span id="printNpn"></span></p>
+                        </div>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
+                            <thead style="background: #eee;">
+                                <tr>
+                                    <th style="border: 1px solid black; padding: 6px;">Description</th>
+                                    <th style="border: 1px solid black; padding: 6px;">Rate (₹)</th>
+                                    <th style="border: 1px solid black; padding: 6px;">Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printInvoiceItems"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2"
+                                        style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">
+                                        Total</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span
+                                            id="printInvoiceTotal"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"
+                                        style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">
+                                        Paid</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span
+                                            id="printAmountPaid"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"
+                                        style="text-align: right; font-weight: bold; border: 1px solid black; padding: 6px;">
+                                        Balance</td>
+                                    <td style="border: 1px solid black; padding: 6px;"><span id="printBalance"></span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="margin-bottom: 8px; font-size: 14px;">Payment History</h5>
+                            <div id="printPaymentHistory" style="font-size: 12px;"></div>
+                        </div>
+
+                        <p style="margin-top: 10px; font-size: 12px;"><strong>Amount in words:</strong> <span
+                                id="printAmountInWords"></span></p>
+                        <p style="font-size: 12px;"><strong>Number value:</strong> <span id="printNumberValue"></span>
+                        </p>
+
+                        <p style="text-align: center; margin-top: 20px; font-style: italic; font-size: 12px;">Thank you
+                            for your business!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatInvoiceDate(d) {
+            if (!d) return '';
+            return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function populateYearSelect() {
+            const yearSelect = document.getElementById('yearSelect');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear - 10; year <= currentYear + 5; year++) {
+                yearSelect.add(new Option(year, year));
+            }
+            yearSelect.value = currentYear;
+        }
+
+        async function loadMonthlyInvoices(month, year) {
+            try {
+                const startDate = new Date(year, month, 1);
+                const endDate = new Date(year, month + 1, 0); // Last day of the month
+                const response = await fetch(`/api/invoices?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`);
+                const invoices = await response.json();
+                const tbody = document.getElementById('invoiceList');
+                tbody.innerHTML = '';
+                if (invoices.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">No invoices for this period</td></tr>';
+                    return;
+                }
+
+                let periodTotalPaid = 0;
+                let periodTotalBalance = 0;
+                invoices.forEach(invoice => {
+                    const paid = invoice.amountPaid || 0;
+                    const balance = invoice.total - paid;
+                    periodTotalPaid += paid;
+                    periodTotalBalance += balance;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${invoice.number}</td>
+                        <td>${invoice.name}</td>
+                        <td>${invoice.address}</td>
+                        <td>${invoice.date}</td>
+                        <td>₹${invoice.total.toFixed(2)}</td>
+                        <td>₹${paid.toFixed(2)}</td>
+                        <td>₹${balance.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm me-1 view-invoice" data-id="${invoice._id}"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-success btn-sm download-invoice" data-id="${invoice._id}"><i class="fas fa-download"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('periodTotalPaid').textContent = periodTotalPaid.toFixed(2);
+                document.getElementById('periodTotalBalance').textContent = periodTotalBalance.toFixed(2);
+                addInvoiceEventListeners();
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+                document.getElementById('invoiceList').innerHTML = '<tr><td colspan="8" class="text-center">Error loading invoices</td></tr>';
+            }
+        }
+
+        function addInvoiceEventListeners() {
+            document.querySelectorAll('.view-invoice').forEach(btn => {
+                btn.addEventListener('click', () => showInvoice(btn.dataset.id));
+            });
+            document.querySelectorAll('.download-invoice').forEach(btn => {
+                btn.addEventListener('click', () => generatePrintableInvoice(btn.dataset.id));
+            });
+        }
+
+        async function showInvoice(id) {
+            try {
+                const response = await fetch(`/api/invoices/${id}`);
+                const invoice = await response.json();
+                if (response.ok) {
+                    document.getElementById('viewInvoiceNumber').textContent = invoice.number;
+                    document.getElementById('viewInvoiceDate').textContent = invoice.date;
+                    document.getElementById('viewCustomerName').textContent = invoice.name;
+                    document.getElementById('viewCustomerAddress').textContent = invoice.address;
+                    document.getElementById('viewCustomerCity').textContent = invoice.city;
+                    document.getElementById('viewNameNumber').textContent = invoice.nameNumber || '';
+                    document.getElementById('viewNameDate').textContent = invoice.nameDate || '';
+                    document.getElementById('viewNpn').textContent = invoice.npn || '';
+                    document.getElementById('viewAmountInWords').textContent = invoice.amountInWords || '';
+                    document.getElementById('viewNumberValue').textContent = invoice.numberValue || '';
+
+                    const itemsBody = document.getElementById('viewInvoiceItems');
+                    itemsBody.innerHTML = '';
+                    invoice.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.description}</td>
+                            <td>₹${item.rate.toFixed(2)}</td>
+                            <td>₹${item.amount.toFixed(2)}</td>
+                        `;
+                        itemsBody.appendChild(tr);
+                    });
+
+                    const paid = invoice.amountPaid || 0;
+                    const balance = invoice.total - paid;
+                    document.getElementById('viewInvoiceTotal').textContent = '₹' + invoice.total.toFixed(2);
+                    document.getElementById('viewAmountPaid').textContent = '₹' + paid.toFixed(2);
+                    document.getElementById('viewBalance').textContent = '₹' + balance.toFixed(2);
+
+                    const paymentHistory = document.getElementById('paymentHistoryView');
+                    paymentHistory.innerHTML = '';
+                    if (invoice.payments && invoice.payments.length > 0) {
+                        invoice.payments.forEach(p => {
+                            const div = document.createElement('div');
+                            div.className = 'payment-row d-flex justify-content-between';
+                            div.innerHTML = `
+                                <span>${formatDate(p.date)}</span>
+                                <span>₹${p.amount.toFixed(2)} (${p.method})</span>
+                            `;
+                            paymentHistory.appendChild(div);
+                        });
+                    } else {
+                        paymentHistory.innerHTML = '<p class="text-center text-muted">No payments recorded</p>';
+                    }
+
+                    document.getElementById('downloadInvoiceBtn').dataset.id = id;
+                    new bootstrap.Modal(document.getElementById('viewModal')).show();
+                } else {
+                    alert('Error fetching invoice: ' + invoice.error);
+                }
+            } catch (error) {
+                alert('Error fetching invoice: ' + error.message);
+            }
+        }
+
+        async function generatePrintableInvoice(id) {
+            try {
+                const response = await fetch(`/api/invoices/${id}`);
+                const invoice = await response.json();
+                if (response.ok) {
+                    document.getElementById('printInvoiceNumber').textContent = invoice.number;
+                    document.getElementById('printInvoiceDate').textContent = invoice.date;
+                    document.getElementById('printCustomerName').textContent = invoice.name;
+                    document.getElementById('printCustomerAddress').textContent = invoice.address;
+                    document.getElementById('printCustomerCity').textContent = invoice.city;
+                    document.getElementById('printNameNumber').textContent = invoice.nameNumber || '';
+                    document.getElementById('printNameDate').textContent = invoice.nameDate || '';
+                    document.getElementById('printNpn').textContent = invoice.npn || '';
+                    document.getElementById('printAmountInWords').textContent = invoice.amountInWords || '';
+                    document.getElementById('printNumberValue').textContent = invoice.numberValue || '';
+
+                    const itemsBody = document.getElementById('printInvoiceItems');
+                    itemsBody.innerHTML = '';
+                    invoice.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="border: 1px solid black; padding: 6px;">${item.description}</td>
+                            <td style="border: 1px solid black; padding: 6px;">₹${item.rate.toFixed(2)}</td>
+                            <td style="border: 1px solid black; padding: 6px;">₹${item.amount.toFixed(2)}</td>
+                        `;
+                        itemsBody.appendChild(tr);
+                    });
+
+                    const paid = invoice.amountPaid || 0;
+                    const balance = invoice.total - paid;
+                    document.getElementById('printInvoiceTotal').textContent = '₹' + invoice.total.toFixed(2);
+                    document.getElementById('printAmountPaid').textContent = '₹' + paid.toFixed(2);
+                    document.getElementById('printBalance').textContent = '₹' + balance.toFixed(2);
+
+                    const paymentHistory = document.getElementById('printPaymentHistory');
+                    paymentHistory.innerHTML = '';
+                    if (invoice.payments && invoice.payments.length > 0) {
+                        invoice.payments.forEach(p => {
+                            const div = document.createElement('div');
+                            div.className = 'payment-row';
+                            div.style.cssText = 'display: flex; justify-content: space-between; padding: 4px 0;';
+                            div.innerHTML = `
+                                <span>${formatDate(p.date)}</span>
+                                <span>₹${p.amount.toFixed(2)} (${p.method})</span>
+                            `;
+                            paymentHistory.appendChild(div);
+                        });
+                    } else {
+                        paymentHistory.innerHTML = '<p style="text-align: center; font-style: italic;">No payments recorded</p>';
+                    }
+
+                    window.print();
+                } else {
+                    alert('Error fetching invoice: ' + invoice.error);
+                }
+            } catch (error) {
+                alert('Error generating invoice: ' + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateYearSelect();
+            const now = new Date();
+            document.getElementById('monthSelect').value = now.getMonth();
+            document.getElementById('yearSelect').value = now.getFullYear();
+            loadMonthlyInvoices(now.getMonth(), now.getFullYear());
+            document.getElementById('filterBtn').addEventListener('click', () => {
+                const month = parseInt(document.getElementById('monthSelect').value);
+                const year = parseInt(document.getElementById('yearSelect').value);
+                loadMonthlyInvoices(month, year);
+            });
+        });
+    </script>
+</body>
+
+</html>
